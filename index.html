@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DocStyler — Автоформатирование статьи по шаблону</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root { --brand: #0d6efd; }
+    body { background: #0b0d12; color: #e8eaed; }
+    .bg-card { background: #11151d; border: 1px solid rgba(255,255,255,0.06); }
+    .text-soft { color: #b6beca; }
+    .dropzone { border: 2px dashed rgba(255,255,255,.18); border-radius: 1rem; transition: .2s; cursor: pointer; }
+    .dropzone.dragover { border-color: var(--brand); background: rgba(13,110,253,.07); }
+    .file-chip { font-size: .9rem; }
+    .badge-soft { background: rgba(255,255,255,.08); color: #cbd5e1; }
+    .footer { color: #8891a2; }
+    .visually-hidden-focusable:focus { clip: auto; width: auto; height: auto; margin: 0; } 
+  </style>
+</head>
+<body>
+  <a class="visually-hidden-focusable position-absolute top-0 start-0 m-3 p-2 bg-dark text-white rounded" href="#main">Пропустить к содержимому</a>
+  <div class="container py-4 py-md-5">
+    <header class="d-flex align-items-start justify-content-between mb-4">
+      <div>
+        <h1 class="h3 mb-1">DocStyler</h1>
+        <p class="text-soft mb-0">Автоформатирование статьи по шаблону <span class="badge badge-soft ms-1">HTML + Bootstrap 5</span></p>
+      </div>
+      <span class="badge rounded-pill text-bg-secondary align-self-start">MVP</span>
+    </header>
+
+    <main id="main" class="row g-4">
+      <!-- Upload Card -->
+      <section class="col-12">
+        <div class="bg-card rounded-4 p-4">
+          <h2 class="h5 mb-1">Загрузка файлов</h2>
+          <p class="text-soft mb-4">1) Шаблон оформления (.docx)  2) Черновик статьи (.docx)</p>
+
+          <div class="row g-3">
+            <!-- Template dropzone -->
+            <div class="col-12 col-md-6">
+              <div id="dz-template" class="dropzone p-4 text-center" role="button" tabindex="0" aria-label="Загрузить шаблон .docx">
+                <div class="mb-2"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-cloud-arrow-up" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M7.646 9.854a.5.5 0 0 0 .708 0l2-2a.5.5 0 0 0-.708-.708L8.5 8.293V5.5a.5.5 0 0 0-1 0v2.793L6.354 7.146a.5.5 0 1 0-.708.708l2 2z"/><path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H4.781C2.75 13 1 11.366 1 9.364c0-1.636 1.145-2.961 2.682-3.263.197-.955.698-1.79 1.401-2.387z"/></svg></div>
+                <div class="fw-semibold">Шаблон оформления (.docx)</div>
+                <div class="text-soft small">Перетащите файл сюда или кликните</div>
+                <input id="input-template" type="file" accept=".docx" class="d-none" />
+                <div class="mt-3" id="chip-template"></div>
+              </div>
+            </div>
+
+            <!-- Draft dropzone -->
+            <div class="col-12 col-md-6">
+              <div id="dz-draft" class="dropzone p-4 text-center" role="button" tabindex="0" aria-label="Загрузить черновик .docx">
+                <div class="mb-2"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-cloud-arrow-up" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M7.646 9.854a.5.5 0 0 0 .708 0l2-2a.5.5 0 0 0-.708-.708L8.5 8.293V5.5a.5.5 0 0 0-1 0v2.793L6.354 7.146a.5.5 0 1 0-.708.708l2 2z"/><path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H4.781C2.75 13 1 11.366 1 9.364c0-1.636 1.145-2.961 2.682-3.263.197-.955.698-1.79 1.401-2.387z"/></svg></div>
+                <div class="fw-semibold">Черновик статьи (.docx)</div>
+                <div class="text-soft small">Перетащите файл сюда или кликните</div>
+                <input id="input-draft" type="file" accept=".docx" class="d-none" />
+                <div class="mt-3" id="chip-draft"></div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="col-12 d-flex flex-wrap gap-2 align-items-center mt-2">
+              <button id="btn-start" class="btn btn-primary">Запустить обработку</button>
+              <button id="btn-reset" class="btn btn-outline-light">Сбросить</button>
+              <div class="small text-soft" id="hint-valid">Загрузите корректные .docx файлы</div>
+            </div>
+
+            <!-- Progress -->
+            <div class="col-12" id="progress-wrap" hidden>
+              <div class="progress" role="progressbar" aria-label="Прогресс" aria-valuemin="0" aria-valuemax="100">
+                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
+              </div>
+              <div class="small text-soft mt-2" id="progress-text">Статус: Обработка… 0%</div>
+            </div>
+
+            <!-- Alerts -->
+            <div class="col-12" id="alert-box" hidden>
+              <div class="alert alert-danger d-flex align-items-start gap-2 mb-0" role="alert">
+                <div class="pt-1">⚠️</div>
+                <div>
+                  <strong class="d-block">Ошибка</strong>
+                  <span id="alert-text">Текст ошибки</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Result Card -->
+      <section class="col-12">
+        <div class="bg-card rounded-4 p-4">
+          <h2 class="h5 mb-1">Готовый файл</h2>
+          <p class="text-soft mb-3">Скачайте оформленную статью после завершения обработки</p>
+          <button id="btn-download" class="btn btn-success" disabled>
+            Скачать результат
+          </button>
+          <span class="small text-soft ms-2" id="meta-time"></span>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer text-center mt-5">© <span id="year"></span> DocStyler • HTML MVP</footer>
+  </div>
+
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ---- State ----
+    let templateFile = null;
+    let draftFile = null;
+    let resultBlob = null;
+    let processing = false;
+
+    // ---- Utils ----
+    const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    const byId = id => document.getElementById(id);
+    const isDocx = f => !!f && (f.type === DOCX_MIME || f.name?.toLowerCase().endsWith('.docx'));
+    const bytesToMB = b => (b / (1024*1024)).toFixed(1);
+    const setHidden = (el, value) => { el.hidden = value; };
+
+    function makeChip(file) {
+      const size = bytesToMB(file.size);
+      return `<span class="badge rounded-pill text-bg-secondary file-chip">${file.name} · ${size} MB</span>`;
+    }
+
+    function setValidHint() {
+      const ok = isDocx(templateFile) && isDocx(draftFile);
+      const el = byId('hint-valid');
+      el.textContent = ok ? 'Файлы готовы к обработке' : 'Загрузите корректные .docx файлы';
+      el.classList.toggle('text-success', ok);
+      el.classList.toggle('text-soft', !ok);
+      byId('btn-start').disabled = !ok || processing;
+    }
+
+    function resetAll() {
+      templateFile = null; draftFile = null; resultBlob = null; processing = false;
+      byId('chip-template').innerHTML = '';
+      byId('chip-draft').innerHTML = '';
+      byId('btn-download').disabled = true;
+      byId('meta-time').textContent = '';
+      setHidden(byId('alert-box'), true);
+      setHidden(byId('progress-wrap'), true);
+      setProgress(0);
+      setValidHint();
+    }
+
+    function setProgress(p) {
+      const bar = byId('progress-bar');
+      bar.style.width = p + '%';
+      bar.setAttribute('aria-valuenow', p);
+      byId('progress-text').textContent = `Статус: ${processing ? 'Обработка' : 'Загрузка'}… ${p}%`;
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // ---- Fake processing (replace with real API) ----
+    async function fakeProcess(template, draft, onProgress) {
+      const start = performance.now();
+      let p = 0;
+      setHidden(byId('progress-wrap'), false);
+      processing = true; setValidHint();
+      while (p < 100) {
+        await new Promise(r => setTimeout(r, 250));
+        p = Math.min(100, p + Math.round(10 + Math.random()*20));
+        onProgress(p);
+      }
+      const content = `DocStyler result\nTemplate: ${template.name}\nDraft: ${draft.name}\nGenerated: ${new Date().toISOString()}`;
+      const blob = new Blob([content], { type: 'application/octet-stream' });
+      const duration = Math.round(performance.now() - start);
+      return { blob, filename: `formatted_${draft.name.replace(/\.[^.]+$/, '')}.docx`, duration };
+    }
+
+    // ---- Real request (template, for backend integration) ----
+    async function processDocuments(template, draft, onProgress) {
+      // TODO: заменить fakeProcess на реальный вызов API
+      // const form = new FormData();
+      // form.append('template', template);
+      // form.append('draft', draft);
+      // const res = await fetch('/api/v1/format', { method: 'POST', body: form });
+      // if (!res.ok) throw new Error(await res.text());
+      // const blob = await res.blob();
+      // return { blob, filename: 'formatted.docx', duration: 0 };
+      return fakeProcess(template, draft, onProgress);
+    }
+
+    // ---- Dropzone wiring ----
+    function bindDropzone(zoneId, inputId, onFile) {
+      const dz = byId(zoneId);
+      const input = byId(inputId);
+
+      dz.addEventListener('click', () => input.click());
+      dz.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') input.click(); });
+
+      ['dragenter','dragover'].forEach(evt => dz.addEventListener(evt, (e) => { e.preventDefault(); dz.classList.add('dragover'); }));
+      ;['dragleave','drop'].forEach(evt => dz.addEventListener(evt, () => dz.classList.remove('dragover')));
+
+      dz.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const f = e.dataTransfer.files?.[0];
+        if (f) onFile(f);
+      });
+
+      input.addEventListener('change', (e) => {
+        const f = e.target.files?.[0];
+        if (f) onFile(f);
+      });
+    }
+
+    bindDropzone('dz-template', 'input-template', (f) => {
+      if (!isDocx(f)) return showError('Поддерживается только формат .docx для шаблона.');
+      templateFile = f; byId('chip-template').innerHTML = makeChip(f); setValidHint();
+    });
+
+    bindDropzone('dz-draft', 'input-draft', (f) => {
+      if (!isDocx(f)) return showError('Поддерживается только формат .docx для черновика.');
+      draftFile = f; byId('chip-draft').innerHTML = makeChip(f); setValidHint();
+    });
+
+    function showError(msg) {
+      byId('alert-text').textContent = msg;
+      setHidden(byId('alert-box'), false);
+      setTimeout(() => setHidden(byId('alert-box'), true), 4000);
+    }
+
+    // ---- Actions ----
+    byId('btn-start').addEventListener('click', async () => {
+      if (!isDocx(templateFile) || !isDocx(draftFile)) return showError('Загрузите оба .docx файла.');
+      try {
+        const { blob, filename, duration } = await processDocuments(templateFile, draftFile, setProgress);
+        resultBlob = blob;
+        byId('btn-download').disabled = false;
+        byId('meta-time').textContent = `Время обработки: ${Math.round(duration/1000)} сек.`;
+      } catch (e) {
+        showError(e?.message || 'Ошибка обработки');
+      } finally {
+        processing = false; setValidHint(); setProgress(100);
+      }
+    });
+
+    byId('btn-reset').addEventListener('click', resetAll);
+
+    byId('btn-download').addEventListener('click', () => {
+      if (!resultBlob) return;
+      const name = 'formatted_article.docx';
+      downloadBlob(resultBlob, name);
+    });
+
+    byId('year').textContent = new Date().getFullYear();
+    resetAll();
+  </script>
+</body>
+</html>
