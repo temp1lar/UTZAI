@@ -1,0 +1,5 @@
+com\docstyler\backend\controller\AuthController.class
+com\docstyler\backend\model\AuthRequest.class
+com\docstyler\backend\BackendApplication.class
+com\docstyler\backend\model\User.class
+com\docstyler\backend\model\RegisterRequest.class
