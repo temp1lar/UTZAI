@@ -46,7 +46,7 @@ public class DocumentProcessingService {
         // Сохраняем в памяти
         statusCache.put(processId, status);
 
-        log.info("🚀 Starting document processing: {}", processId);
+        log.info("Starting document processing: {}", processId);
         log.info("   User: {}, Template: {}, Draft: {}",
                 userId, template.getOriginalFilename(), draft.getOriginalFilename());
 
@@ -55,7 +55,7 @@ public class DocumentProcessingService {
             try {
                 processDocumentsAsync(processId, template, draft);
             } catch (Exception e) {
-                log.error("❌ Error processing documents", e);
+                log.error("Error processing documents", e);
                 status.setStatus("ERROR");
                 status.setMessage("Ошибка: " + e.getMessage());
             }
@@ -90,11 +90,11 @@ public class DocumentProcessingService {
 
             // 3. Обновляем статус
             status.setProgress(10);
-            status.setMessage("📁 Файлы сохранены, запускаем Python агент...");
+            status.setMessage("Файлы сохранены, запускаем Python агент...");
 
             // 4. Находим Python агента
             File agentFile = findPythonAgentFile();
-            log.info("✅ Python agent found at: {}", agentFile.getAbsolutePath());
+            log.info("Python agent found at: {}", agentFile.getAbsolutePath());
 
             // 5. Запускаем Python агента
             ProcessBuilder pb = new ProcessBuilder(
@@ -126,7 +126,7 @@ public class DocumentProcessingService {
                         status.setStatus("COMPLETED");
                         status.setProgress(100);
                         status.setEndTime(java.time.LocalDateTime.now());
-                        status.setMessage("✅ Обработка завершена!");
+                        status.setMessage("Обработка завершена!");
                     }
                 }
             }
@@ -136,22 +136,22 @@ public class DocumentProcessingService {
 
             if (exitCode != 0 && !"COMPLETED".equals(status.getStatus())) {
                 status.setStatus("ERROR");
-                status.setMessage("❌ Python агент завершился с ошибкой: " + exitCode);
+                status.setMessage("Python агент завершился с ошибкой: " + exitCode);
             } else if ("COMPLETED".equals(status.getStatus())) {
                 // Уже обновлено в цикле чтения
             } else {
                 status.setStatus("COMPLETED");
                 status.setProgress(100);
-                status.setMessage("✅ Обработка завершена успешно!");
+                status.setMessage("Обработка завершена успешно!");
                 status.setEndTime(java.time.LocalDateTime.now());
             }
 
-            log.info("📊 Processing complete for {}: {}", processId, status.getStatus());
+            log.info("Processing complete for {}: {}", processId, status.getStatus());
 
         } catch (Exception e) {
-            log.error("❌ Processing error for {}", processId, e);
+            log.error("Processing error for {}", processId, e);
             status.setStatus("ERROR");
-            status.setMessage("❌ Ошибка: " + e.getMessage());
+            status.setMessage("Ошибка: " + e.getMessage());
         }
     }
 
@@ -181,14 +181,14 @@ public class DocumentProcessingService {
             for (File candidate : candidates) {
                 log.debug("Checking path: {}", candidate.getAbsolutePath());
                 if (candidate.exists()) {
-                    log.info("✅ Found Python agent at: {}", candidate.getAbsolutePath());
+                    log.info("Found Python agent at: {}", candidate.getAbsolutePath());
                     return candidate;
                 }
             }
         }
 
         // 4. Если ничего не нашли, бросаем исключение
-        throw new RuntimeException("❌ Python agent not found. Searched paths:\n" +
+        throw new RuntimeException("Python agent not found. Searched paths:\n" +
                 "1. " + agentFile.getAbsolutePath() + "\n" +
                 "2. From backend dir: " + new File(".").getAbsolutePath());
     }
@@ -196,7 +196,7 @@ public class DocumentProcessingService {
     public ProcessStatus getProcessStatus(String processId) {
         ProcessStatus status = statusCache.get(processId);
         if (status == null) {
-            throw new RuntimeException("❌ Process not found: " + processId);
+            throw new RuntimeException("Process not found: " + processId);
         }
         return status;
     }
@@ -205,16 +205,16 @@ public class DocumentProcessingService {
         ProcessStatus status = getProcessStatus(processId);
 
         if (!"COMPLETED".equals(status.getStatus())) {
-            throw new RuntimeException("❌ Process not completed yet. Status: " + status.getStatus());
+            throw new RuntimeException("Process not completed yet. Status: " + status.getStatus());
         }
 
         if (status.getResultFilePath() == null) {
-            throw new RuntimeException("❌ No result file found");
+            throw new RuntimeException("No result file found");
         }
 
         Path resultPath = Paths.get(status.getResultFilePath());
         if (!Files.exists(resultPath)) {
-            throw new RuntimeException("❌ Result file not found: " + resultPath);
+            throw new RuntimeException("Result file not found: " + resultPath);
         }
 
         return Files.readAllBytes(resultPath);
@@ -250,14 +250,14 @@ public class DocumentProcessingService {
             File agentFile = null;
             for (File file : possibleAgentFiles) {
                 System.out.println("   - " + file.getAbsolutePath() + ": " +
-                        (file.exists() ? "✅ FOUND" : "❌ NOT FOUND"));
+                        (file.exists() ? "FOUND" : "NOT FOUND"));
                 if (file.exists() && agentFile == null) {
                     agentFile = file;
                 }
             }
 
             if (agentFile == null) {
-                return "❌ Python agent not found in any location!";
+                return "Python agent not found in any location!";
             }
 
             System.out.println("4. Using agent file: " + agentFile.getAbsolutePath());
