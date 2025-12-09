@@ -2,3 +2,16 @@
 Thumbs.db
 node_modules/
 dist/
+# Java
+target/
+*.class
+
+# IDE
+.idea/
+*.iml
+
+# Другие
+draft.txt
+result_document.txt
+template.txt
+python_agent/
